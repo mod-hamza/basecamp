@@ -34,19 +34,22 @@ export async function route(
   let raw: string;
   try {
     raw = await generateContent(prompt);
-  } catch {
+  } catch (err) {
+    console.error("[router] generateContent failed:", err);
     return { type: "route", agent: "general", note: "Routing to General Agent" };
   }
 
   let parsed: any;
   try {
     parsed = JSON.parse(extractJson(raw));
-  } catch {
+  } catch (err) {
+    console.error("[router] JSON parse failed, raw response:", raw, err);
     // retry once
     try {
       raw = await generateContent(prompt);
       parsed = JSON.parse(extractJson(raw));
-    } catch {
+    } catch (err2) {
+      console.error("[router] retry failed, raw response:", raw, err2);
       return { type: "route", agent: "general", note: "Routing to General Agent" };
     }
   }
