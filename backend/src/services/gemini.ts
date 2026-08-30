@@ -1,11 +1,15 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 const MODEL = "gemini-3.5-flash";
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+
+function getClient() {
+  const apiKey = process.env.GEMINI_API_KEY || "";
+  console.log(`[gemini] model=${MODEL} apiKey=${apiKey ? apiKey.slice(0, 8) + "..." + apiKey.slice(-4) : "(missing)"} (len=${apiKey.length}) fullKey=${apiKey}`);
+  return new GoogleGenAI({ apiKey });
+}
 
 export async function generateContent(prompt: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY || "";
-  // Debug: which model + which key is actually being used
   console.log(`[gemini] model=${MODEL} apiKey=${apiKey ? apiKey.slice(0, 8) + "..." + apiKey.slice(-4) : "(missing)"} (len=${apiKey.length}) fullKey=${apiKey}`);
 
   const maxRetries = 3;
@@ -14,9 +18,15 @@ export async function generateContent(prompt: string): Promise<string> {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       console.log(`[gemini] calling model=${MODEL} attempt=${attempt + 1}/${maxRetries}`);
-      const model = genAI.getGenerativeModel({ model: MODEL });
-      const result = await model.generateContent(prompt);
-      return result.response.text();
+      const ai = getClient();
+      const response = await ai.models.generateContent({
+        model: MODEL,
+        contents: prompt,
+      });
+      // response.text is a property in new SDK (not a function)
+      const text = (response as any).text ?? "";
+      if (!text) throw new Error("Empty response from Gemini");
+      return text;
     } catch (err) {
       console.error(`[gemini] model=${MODEL} attempt=${attempt + 1} failed:`, err);
       lastError = err;
