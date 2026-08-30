@@ -8,7 +8,7 @@ export async function generateContent(prompt: string): Promise<string> {
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
       const result = await model.generateContent(prompt);
       return result.response.text();
     } catch (err) {
