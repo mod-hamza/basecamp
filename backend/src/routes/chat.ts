@@ -35,7 +35,7 @@ export async function chatRoutes(app: FastifyInstance) {
     let result;
     switch (routing.agent) {
       case "finance":
-        result = await handleFinance(message, profile, historyForRoute);
+        result = await handleFinance(message, profile, historyForRoute, chatId);
         break;
       case "study":
         result = await handleStudy(message, profile, historyForRoute);
